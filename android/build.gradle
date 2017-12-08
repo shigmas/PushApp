@@ -1,0 +1,113 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+// I grabbed this from
+// https://github.com/firebase/quickstart-cpp/blob/master/remote_config/testapp/build.gradle
+// I'm not sure if it's totally necessary, but there needs to be something
+// getting the firebase_cpp_sdk_dir, and the first line might be sufficient.
+project.ext {
+  // Configure the Firebase C++ SD location.
+  firebase_cpp_sdk_dir = System.getProperty('firebase_cpp_sdk.dir')
+  if (firebase_cpp_sdk_dir == null || firebase_cpp_sdk_dir.isEmpty()) {
+    firebase_cpp_sdk_dir = System.getenv('FIREBASE_CPP_SDK_DIR')
+    if (firebase_cpp_sdk_dir == null || firebase_cpp_sdk_dir.isEmpty()) {
+      if ((new File('firebase_cpp_sdk')).exists()) {
+        firebase_cpp_sdk_dir = 'firebase_cpp_sdk'
+      } else {
+        throw new StopActionException(
+          'firebase_cpp_sdk.dir property or the FIREBASE_CPP_SDK_DIR ' +
+          'environment variable must be set to reference the Firebase C++ ' +
+          'SDK install directory.  This is used to configure static library ' +
+          'and C/C++ include paths for the SDK.')
+      }
+    }
+  }
+  if (!(new File(firebase_cpp_sdk_dir)).exists()) {
+    throw new StopActionException(
+      sprintf('Firebase C++ SDK directory %s does not exist',
+              firebase_cpp_sdk_dir))
+  }
+}
+
+
+repositories {
+    flatDir {
+    dirs project.ext.firebase_cpp_sdk_dir + "/libs/android"
+  }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.google.firebase:firebase-core:10.2.4'
+    compile 'com.google.firebase:firebase-auth:10.2.4'
+    compile 'com.google.firebase:firebase-messaging:10.2.4'
+    compile 'com.google.firebase.messaging.cpp:firebase_messaging_cpp@aar'
+    compile 'com.google.android.gms:play-services-base:10.2.4'
+}
+
+android {
+    /*******************************************************
+     * The following variables:
+     * - androidBuildToolsVersion,
+     * - androidCompileSdkVersion
+     * - qt5AndroidDir - holds the path to qt android files
+     *                   needed to build any Qt application
+     *                   on Android.
+     *
+     * are defined in gradle.properties file. This file is
+     * updated by QtCreator and androiddeployqt tools.
+     * Changing them manually might break the compilation!
+     *******************************************************/
+
+    compileSdkVersion androidCompileSdkVersion.toInteger()
+
+    buildToolsVersion androidBuildToolsVersion
+
+    defaultConfig {
+        applicationId "net.futomen.PushApp"
+        // No complaints without these, but I put them here anyway. 
+        minSdkVersion 15
+        targetSdkVersion 24
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [qt5AndroidDir + '/src', 'src', 'java']
+            aidl.srcDirs = [qt5AndroidDir + '/src', 'src', 'aidl']
+            res.srcDirs = [qt5AndroidDir + '/res', 'res']
+            resources.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            assets.srcDirs = ['assets']
+            jniLibs.srcDirs = ['libs']
+       }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+
+/*
+ * This runs the google services plugin, which includes lines in the build:
+ * processDebugGoogleServices
+*/
+ 
+apply plugin: 'com.google.gms.google-services'
