@@ -22,7 +22,7 @@ apply plugin: 'com.android.application'
 // I'm not sure if it's totally necessary, but there needs to be something
 // getting the firebase_cpp_sdk_dir, and the first line might be sufficient.
 project.ext {
-  // Configure the Firebase C++ SD location.
+  // Configure the Firebase C++ SDK location.
   firebase_cpp_sdk_dir = System.getProperty('firebase_cpp_sdk.dir')
   if (firebase_cpp_sdk_dir == null || firebase_cpp_sdk_dir.isEmpty()) {
     firebase_cpp_sdk_dir = System.getenv('FIREBASE_CPP_SDK_DIR')
@@ -48,8 +48,8 @@ project.ext {
 
 repositories {
     flatDir {
-    dirs project.ext.firebase_cpp_sdk_dir + "/libs/android"
-  }
+        dirs project.ext.firebase_cpp_sdk_dir + "/libs/android"
+    }
 }
 
 dependencies {
